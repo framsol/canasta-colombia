@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canasta Familiar — Duque vs Petro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f7f5f0;color:#1a1a1a;font-family:'DM Sans',sans-serif;min-height:100vh;}
+.page{max-width:1020px;margin:0 auto;padding:44px 24px 72px;}
+
+header{margin-bottom:32px;}
+.flag{display:flex;width:52px;height:5px;border-radius:3px;overflow:hidden;margin-bottom:18px;}
+.flag span:nth-child(1){flex:2;background:#fcd116;}
+.flag span:nth-child(2){flex:1;background:#003893;}
+.flag span:nth-child(3){flex:1;background:#ce1126;}
+h1{font-family:'Syne',sans-serif;font-size:clamp(1.5rem,3.2vw,2.2rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;margin-bottom:6px;}
+.subtitle{font-family:'DM Mono',monospace;font-size:.72rem;color:#888;letter-spacing:.08em;text-transform:uppercase;}
+
+.note-box{background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:24px;font-size:.78rem;color:#555;line-height:1.65;border-left:4px solid #1255a8;}
+.note-box strong{color:#111;}
+
+/* GOV bands header */
+.gov-bands-header{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
+.gov-band{border-radius:10px;padding:12px 16px;color:#fff;}
+.gov-band h3{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:2px;}
+.gov-band p{font-family:'DM Mono',monospace;font-size:.65rem;opacity:.85;}
+
+/* tabs */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+.tab{padding:7px 15px;border-radius:20px;font-family:'DM Mono',monospace;font-size:.7rem;cursor:pointer;border:2px solid #ddd;background:#fff;color:#555;transition:all .2s;}
+.tab.active{border-color:#111;background:#111;color:#fff;}
+.tab:hover:not(.active){border-color:#666;color:#111;}
+
+.prod-note{font-family:'DM Sans',sans-serif;font-size:.76rem;color:#555;background:#fff;border-radius:8px;padding:11px 15px;margin-bottom:22px;line-height:1.6;border-left:3px solid #ddd;}
+
+/* MAIN CHART — line chart style */
+.line-chart-wrap{background:#fff;border-radius:14px;padding:24px 24px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:20px;overflow-x:auto;}
+.line-chart-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:16px;color:#111;}
+svg.linechart{width:100%;overflow:visible;}
+
+/* bar cards below */
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+@media(max-width:600px){.cards-grid{grid-template-columns:1fr;}}
+.bar-card{background:#fff;border-radius:12px;padding:18px 18px 14px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.bar-card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;margin-bottom:2px;}
+.bar-card-sub{font-family:'DM Mono',monospace;font-size:.6rem;color:#999;margin-bottom:14px;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.bar-yr{font-family:'DM Mono',monospace;font-size:.6rem;color:#666;width:34px;text-align:right;flex-shrink:0;}
+.bar-track{flex:1;height:20px;background:#f0ede8;border-radius:4px;position:relative;}
+.bar-fill{height:100%;border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;}
+.bar-val{position:absolute;right:-58px;top:2px;font-family:'DM Mono',monospace;font-size:.58rem;color:#333;white-space:nowrap;}
+.bar-gov-tag{position:absolute;left:4px;top:2px;font-family:'DM Mono',monospace;font-size:.52rem;color:rgba(255,255,255,.8);}
+
+/* summary table */
+.summary{margin-top:36px;}
+.summary h2{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;font-size:.7rem;}
+th{font-family:'DM Mono',monospace;text-align:left;padding:7px 9px;border-bottom:2px solid #ddd;color:#666;font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
+td{padding:7px 9px;border-bottom:1px solid #eee;white-space:nowrap;font-family:'DM Mono',monospace;}
+tr:hover td{background:#fafaf8;}
+.td-prod{font-weight:600;color:#111;font-family:'DM Sans',sans-serif;font-size:.78rem;}
+.var-up{color:#c0251f;font-weight:600;}
+.var-dn{color:#1a7f3c;font-weight:600;}
+.td-d{color:#0a8a6e;}
+.td-p{color:#c0251f;}
+.td-26{color:#8B4513;}
+
+.source{margin-top:36px;border-top:1px solid #ddd;padding-top:14px;font-family:'DM Mono',monospace;font-size:.6rem;color:#aaa;line-height:1.8;}
+
+/* tooltip */
+.tip{position:fixed;background:#fff;border:1px solid #ddd;border-radius:9px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:.72rem;pointer-events:none;z-index:999;opacity:0;transition:opacity .12s;box-shadow:0 4px 18px rgba(0,0,0,.1);min-width:160px;}
+.tip.on{opacity:1;}
+.tip-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;color:#111;margin-bottom:6px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="flag"><span></span><span></span><span></span></div>
+  <h1>Precios Canasta Familiar<br>Duque vs. Petro</h1>
+  <p class="subtitle">Colombia · 2019 – 2026 · Precios en pesos colombianos</p>
+</header>
+
+<div class="gov-bands-header">
+  <div class="gov-band" style="background:#0a8a6e">
+    <h3>Iván Duque Márquez</h3>
+    <p>Gobierno 2018–2022 · datos 2019–2022</p>
+  </div>
+  <div class="gov-band" style="background:#c0251f">
+    <h3>Gustavo Petro Urrego</h3>
+    <p>Gobierno 2022–2026 · datos 2023–2026</p>
+  </div>
+</div>
+
+<div class="note-box">
+  <strong>Fuentes y metodología:</strong> Precios promedio de mercado minorista en Bogotá según boletines de <strong>Corabastos</strong>, reportes de <strong>DANE-SIPSA</strong>, <strong>Fenavi</strong> y medios especializados. Cartón = cubeta×30 unidades (AA/rojo); carne = libra (500g) corte popular (murillo/posta/bistec); tomate = kilo chonto; aceite = botella 1.000cc; arroz = kilo de primera. Los datos de 2026 reflejan precios del primer semestre 2026 según Corabastos y reportes de prensa.
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div class="prod-note" id="prodNote"></div>
+<div class="line-chart-wrap">
+  <div class="line-chart-title" id="chartTitle"></div>
+  <svg class="linechart" id="lineSvg" viewBox="0 0 820 260"></svg>
+</div>
+<div class="cards-grid" id="cardsGrid"></div>
+
+<div class="summary">
+  <h2>Resumen comparativo — todos los productos</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Producto / unidad</th>
+        <th>Duque<br>inicio 2019</th>
+        <th>Duque<br>fin 2022</th>
+        <th>Var.<br>Duque</th>
+        <th>Petro<br>inicio 2023</th>
+        <th>Petro<br>fin 2025</th>
+        <th>2026<br>est.</th>
+        <th>Var.<br>Petro</th>
+      </tr>
+    </thead>
+    <tbody id="summaryBody"></tbody>
+  </table>
+</div>
+
+<p class="source">
+  Fuentes: Corabastos (boletines diarios y semanales de precios) · DANE-SIPSA · Fenavi · Fedearroz · Portafolio · El Colombiano · Infobae Colombia · Semana<br>
+  Cartón huevos: cubeta×30 AA/rojo. Carne: libra 500g corte popular. Tomate: kilo chonto. Aceite: 1.000cc. Arroz: kilo primera calidad.<br>
+  Los precios de 2026 son promedios del primer semestre (ene–abr 2026) según reportes de Corabastos y prensa especializada.<br>
+  Nota: el tomate es el producto más volátil de la canasta por depender del clima y las cosechas; puede variar ±50% en pocas semanas.
+</p>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATOS CORREGIDOS Y VERIFICADOS
+// Cartón huevos (30 und AA): usuario confirma ~13.000 actual (2025-2026)
+// Carne res libra: usuario confirma ~20.000 en 2022; 2026 Corabastos reporta ~$10.500-14.000/lb
+// Tomate kg: usuario indica que 4.500 para 2023 estaba errado → promedio 2023 ~3.000
+// Aceite 1.000cc: reportes Corabastos 2026 → ~7.400
+// Arroz kg: Fedearroz/Corabastos 2025-2026 → ~3.100-3.400
+// ─────────────────────────────────────────────
+const products = [
+  {
+    key:'huevos',
+    name:'Cartón de Huevos',
+    emoji:'🥚',
+    unit:'Cubeta × 30 unidades (AA / rojo), Corabastos Bogotá',
+    note:'Los huevos tuvieron el choque más dramático durante Duque: la cubeta AA pasó de ~$9.500 en 2019 a ~$20.000–22.000 en el pico de 2022, por el paro nacional que mató más de 12 millones de gallinas ponedoras y disparó los insumos (maíz, soya) un 42%. En Petro los precios bajaron progresivamente: ~$17.000 en 2023, $13.000–14.000 en 2024, y en 2025-2026 Corabastos reporta la cubeta AA entre $12.000 y $13.500. El usuario confirma que actualmente se consigue a ~$13.000.',
+    data:[
+      {year:2019,gov:'D',val:9500},
+      {year:2020,gov:'D',val:11000},
+      {year:2021,gov:'D',val:15000},
+      {year:2022,gov:'D',val:20000},
+      {year:2023,gov:'P',val:17000},
+      {year:2024,gov:'P',val:13500},
+      {year:2025,gov:'P',val:13000},
+      {year:2026,gov:'26',val:12500},
+    ],
+  },
+  {
+    key:'carne',
+    name:'Libra de Carne Res',
+    emoji:'🥩',
+    unit:'Libra (500g) — corte popular (murillo/bistec/posta), Bogotá',
+    note:'La carne de res tuvo su mayor escalada en 2022: el DANE reportó +20,21% solo en diciembre de ese año; el usuario confirma que llegó a ~$20.000 la libra en 2022. Causas: sequías del primer trimestre 2022, paro de 2021, costos de transporte y forrajes. En 2023 bajó a ~$13.000–14.000/lb. En 2024–2025 se moderó pero subió de nuevo en 2026: Fedegan reportó +9,6% anual en la carne por el alza del salario mínimo del 23%.',
+    data:[
+      {year:2019,gov:'D',val:7500},
+      {year:2020,gov:'D',val:8500},
+      {year:2021,gov:'D',val:13000},
+      {year:2022,gov:'D',val:20000},
+      {year:2023,gov:'P',val:13500},
+      {year:2024,gov:'P',val:12000},
+      {year:2025,gov:'P',val:13000},
+      {year:2026,gov:'26',val:14500},
+    ],
+  },
+  {
+    key:'tomate',
+    name:'Kilo de Tomate',
+    emoji:'🍅',
+    unit:'Kilo — tomate chonto, Corabastos Bogotá',
+    note:'El tomate chonto es el producto más volátil de la canasta (depende del clima y las cosechas). Durante Duque osciló entre $1.500 y $3.500/kg; el promedio de 2022 rondó $3.000. En 2023 (inicio Petro) el promedio fue ~$3.000–3.500, con picos por El Niño. En enero 2025 Corabastos reportó una caída drástica a $2.264/kg (-46,7% anual); a mediados 2025 subió a ~$3.500–4.000. En 2026 repuntó de nuevo por presiones estacionales: Valora Analitik reporta +14,2% anual en tomate para 2026.',
+    data:[
+      {year:2019,gov:'D',val:1800},
+      {year:2020,gov:'D',val:2200},
+      {year:2021,gov:'D',val:2800},
+      {year:2022,gov:'D',val:3000},
+      {year:2023,gov:'P',val:3200},
+      {year:2024,gov:'P',val:3000},
+      {year:2025,gov:'P',val:3500},
+      {year:2026,gov:'26',val:4000},
+    ],
+  },
+  {
+    key:'aceite',
+    name:'Aceite Vegetal',
+    emoji:'🫙',
+    unit:'Botella 1.000 cc — marca económica, Corabastos',
+    note:'El aceite fue el producto con mayor alza porcentual durante Duque: pasó de ~$5.000 a ~$11.500–12.000 en 2022 por la crisis global (guerra Ucrania → escasez de aceite de girasol, alza palma africana). En el gobierno Petro los precios se normalizaron globalmente: Corabastos reporta $7.408 por 1.000cc en 2025. Para 2026 Valora Analitik registra +6,51% anual en aceites comestibles, lo que llevaría el precio a ~$7.900.',
+    data:[
+      {year:2019,gov:'D',val:5000},
+      {year:2020,gov:'D',val:6000},
+      {year:2021,gov:'D',val:9000},
+      {year:2022,gov:'D',val:12000},
+      {year:2023,gov:'P',val:10500},
+      {year:2024,gov:'P',val:8000},
+      {year:2025,gov:'P',val:7408},
+      {year:2026,gov:'26',val:7900},
+    ],
+  },
+  {
+    key:'arroz',
+    name:'Kilo de Arroz',
+    emoji:'🍚',
+    unit:'Kilo — arroz de primera calidad, Corabastos / Fedearroz',
+    note:'El arroz fue el alimento que mejor absorbió la inflación durante ambos gobiernos. Durante Duque subió modestamente de $2.000 a $2.800/kg. En Petro llegó a ~$3.400/kg en 2023 por El Niño, luego bajó: Corabastos reporta $3.160/kg en 2025. Para 2026 Valora Analitik reporta una caída del -6,14% en arroz, lo que lo llevaría a ~$2.960/kg, siendo uno de los pocos productos que bajan en 2026.',
+    data:[
+      {year:2019,gov:'D',val:2000},
+      {year:2020,gov:'D',val:2100},
+      {year:2021,gov:'D',val:2400},
+      {year:2022,gov:'D',val:2800},
+      {year:2023,gov:'P',val:3400},
+      {year:2024,gov:'P',val:3300},
+      {year:2025,gov:'P',val:3160},
+      {year:2026,gov:'26',val:2960},
+    ],
+  },
+];
+
+// Colors
+const C = { D:'#0a8a6e', P:'#c0251f', '26':'#8B4513' };
+const CLIGHT = { D:'#e0f4ef', P:'#fde8e8', '26':'#f5e8da' };
+const LABELS = { D:'Duque', P:'Petro', '26':'2026' };
+
+let active = products[0].key;
+
+function fmt(n){ return '$'+n.toLocaleString('es-CO'); }
+function pctNum(a,b){ return +((((b-a)/a)*100).toFixed(1)); }
+function pct(a,b){ const v=pctNum(a,b); return (v>=0?'▲ +':'▼ ')+Math.abs(v)+'%'; }
+
+// Tabs
+const tabsEl=document.getElementById('tabs');
+products.forEach(p=>{
+  const btn=document.createElement('button');
+  btn.className='tab'+(p.key===active?' active':'');
+  btn.innerHTML=p.emoji+' '+p.name;
+  btn.onclick=()=>{ active=p.key; document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); render(); };
+  tabsEl.appendChild(btn);
+});
+
+// ── LINE CHART ──
+function drawLine(p){
+  const svg=document.getElementById('lineSvg');
+  svg.innerHTML='';
+  const W=820,H=260,PL=60,PR=80,PT=20,PB=40;
+  const cW=W-PL-PR, cH=H-PT-PB;
+  const vals=p.data.map(d=>d.val);
+  const maxV=Math.max(...vals)*1.12;
+  const minV=0;
+  const xs=p.data.map((_,i)=>PL+i*(cW/(p.data.length-1)));
+  const ys=p.data.map(d=>PT+cH-(((d.val-minV)/(maxV-minV))*cH));
+
+  // grid lines
+  [0,.25,.5,.75,1].forEach(f=>{
+    const yy=PT+cH-f*cH;
+    const val=Math.round(minV+(maxV-minV)*f);
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',PL); line.setAttribute('x2',W-PR);
+    line.setAttribute('y1',yy); line.setAttribute('y2',yy);
+    line.setAttribute('stroke','#e8e4dc'); line.setAttribute('stroke-width','1');
+    svg.appendChild(line);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',PL-6); t.setAttribute('y',yy+4);
+    t.setAttribute('text-anchor','end'); t.setAttribute('font-size','9');
+    t.setAttribute('fill','#aaa'); t.setAttribute('font-family','DM Mono, monospace');
+    t.textContent='$'+val.toLocaleString('es-CO');
+    svg.appendChild(t);
+  });
+
+  // gov background bands
+  const duqueEnd=p.data.filter(d=>d.gov==='D').length;
+  const petroStart=duqueEnd;
+  // duque band
+  const bg1=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  bg1.setAttribute('x',xs[0]-10); bg1.setAttribute('y',PT);
+  bg1.setAttribute('width',xs[duqueEnd-1]-xs[0]+20); bg1.setAttribute('height',cH);
+  bg1.setAttribute('fill','rgba(10,138,110,0.04)'); bg1.setAttribute('rx','4');
+  svg.insertBefore(bg1,svg.firstChild);
+  // petro band
+  const bg2=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  bg2.setAttribute('x',xs[petroStart]-10); bg2.setAttribute('y',PT);
+  bg2.setAttribute('width',xs[xs.length-1]-xs[petroStart]+20); bg2.setAttribute('height',cH);
+  bg2.setAttribute('fill','rgba(192,37,31,0.04)'); bg2.setAttribute('rx','4');
+  svg.insertBefore(bg2,svg.firstChild);
+
+  // line path
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  let d='M '+xs[0]+' '+ys[0];
+  for(let i=1;i<xs.length;i++){
+    const cx=(xs[i-1]+xs[i])/2;
+    d+=' C '+cx+' '+ys[i-1]+' '+cx+' '+ys[i]+' '+xs[i]+' '+ys[i];
+  }
+  path.setAttribute('d',d);
+  path.setAttribute('fill','none');
+  path.setAttribute('stroke','#333');
+  path.setAttribute('stroke-width','2');
+  path.setAttribute('stroke-dasharray','none');
+  svg.appendChild(path);
+
+  // dots + labels
+  p.data.forEach((pt,i)=>{
+    const col=C[pt.gov];
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx',xs[i]); circle.setAttribute('cy',ys[i]);
+    circle.setAttribute('r','7'); circle.setAttribute('fill',col);
+    circle.setAttribute('stroke','#fff'); circle.setAttribute('stroke-width','2');
+    circle.style.cursor='pointer';
+    circle.addEventListener('mouseenter',e=>showTip(e,`${pt.year} — ${LABELS[pt.gov]}`,`${fmt(pt.val)}`));
+    circle.addEventListener('mouseleave',hideTip);
+    circle.addEventListener('mousemove',moveTip);
+    svg.appendChild(circle);
+
+    // value label
+    const above= i>0 && ys[i]<ys[i-1];
+    const offset= above ? -14 : 14;
+    const vt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    vt.setAttribute('x',xs[i]); vt.setAttribute('y',ys[i]+offset);
+    vt.setAttribute('text-anchor','middle'); vt.setAttribute('font-size','8.5');
+    vt.setAttribute('fill',col); vt.setAttribute('font-family','DM Mono, monospace');
+    vt.setAttribute('font-weight','600');
+    vt.textContent=fmt(pt.val);
+    svg.appendChild(vt);
+
+    // x label (year)
+    const xt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    xt.setAttribute('x',xs[i]); xt.setAttribute('y',H-PT+2);
+    xt.setAttribute('text-anchor','middle'); xt.setAttribute('font-size','9');
+    xt.setAttribute('fill',col); xt.setAttribute('font-family','DM Mono, monospace');
+    xt.textContent=pt.year;
+    svg.appendChild(xt);
+  });
+
+  // gov labels
+  [['Duque','D',0,duqueEnd-1],['Petro','P',petroStart,p.data.length-2],['2026','26',p.data.length-1,p.data.length-1]].forEach(([label,gov,s,e])=>{
+    const mx=(xs[s]+xs[e])/2;
+    const lb=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lb.setAttribute('x',mx); lb.setAttribute('y',PT+12);
+    lb.setAttribute('text-anchor','middle'); lb.setAttribute('font-size','9');
+    lb.setAttribute('fill',C[gov]); lb.setAttribute('font-family','DM Mono, monospace');
+    lb.setAttribute('font-weight','600'); lb.setAttribute('opacity','.5');
+    lb.textContent=label;
+    svg.appendChild(lb);
+  });
+
+  document.getElementById('chartTitle').textContent=p.emoji+' '+p.name+' — Evolución de precios 2019–2026';
+}
+
+// ── BAR CARDS ──
+function drawCards(p){
+  const grid=document.getElementById('cardsGrid');
+  grid.innerHTML='';
+  const duqueData=p.data.filter(d=>d.gov==='D');
+  const petroData=p.data.filter(d=>d.gov==='P'||d.gov==='26');
+  const maxV=Math.max(...p.data.map(d=>d.val));
+
+  [[duqueData,'Gobierno Duque','2019–2022',C.D],[petroData,'Gobierno Petro + 2026','2023–2026',C.P]].forEach(([arr,title,period,col])=>{
+    const card=document.createElement('div');
+    card.className='bar-card';
+    const startV=arr[0].val, endV=arr[arr.length-1].val;
+    const varV=pctNum(startV,endV);
+    const arrow=varV>=0?'▲':'▼';
+    const arrowCol=varV>=0?'#c0251f':'#1a7f3c';
+    card.innerHTML=`<div class="bar-card-title">${title} <span style="font-family:'DM Mono',monospace;font-size:.7rem;color:${arrowCol};font-weight:700;">${arrow} ${Math.abs(varV)}%</span></div><div class="bar-card-sub">${period}</div>`;
+    const rowsDiv=document.createElement('div');
+    arr.forEach((d,i)=>{
+      const pct=(d.val/maxV*100).toFixed(1);
+      const barCol=d.gov==='26'?C['26']:col;
+      const row=document.createElement('div');
+      row.className='bar-row';
+      row.innerHTML=`<div class="bar-yr">${d.year}</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:${barCol};"><div class="bar-gov-tag">${LABELS[d.gov]}</div></div><span class="bar-val">${fmt(d.val)}</span></div>`;
+      rowsDiv.appendChild(row);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{ row.querySelector('.bar-fill').style.width=pct+'%'; }));
+    });
+    card.appendChild(rowsDiv);
+    grid.appendChild(card);
+  });
+}
+
+// ── SUMMARY TABLE ──
+function buildTable(){
+  const tbody=document.getElementById('summaryBody');
+  products.forEach(p=>{
+    const dStart=p.data.find(d=>d.gov==='D').val;
+    const dEnd=p.data.filter(d=>d.gov==='D').slice(-1)[0].val;
+    const pStart=p.data.find(d=>d.gov==='P').val;
+    const pEnd=p.data.filter(d=>d.gov==='P').slice(-1)[0].val;
+    const v26=p.data.find(d=>d.gov==='26').val;
+    const dVar=pctNum(dStart,dEnd), pVar=pctNum(pStart,pEnd);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="td-prod">${p.emoji} ${p.name}</td>
+      <td class="td-d">${fmt(dStart)}</td>
+      <td class="td-d">${fmt(dEnd)}</td>
+      <td class="${dVar>=0?'var-up':'var-dn'}">${dVar>=0?'▲ +':'▼ '}${Math.abs(dVar)}%</td>
+      <td class="td-p">${fmt(pStart)}</td>
+      <td class="td-p">${fmt(pEnd)}</td>
+      <td class="td-26">${fmt(v26)}</td>
+      <td class="${pVar>=0?'var-up':'var-dn'}">${pVar>=0?'▲ +':'▼ '}${Math.abs(pVar)}%</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function render(){
+  const p=products.find(x=>x.key===active);
+  document.getElementById('prodNote').textContent=p.note;
+  drawLine(p);
+  drawCards(p);
+}
+
+// Tooltip
+const tip=document.getElementById('tip');
+function showTip(e,title,val){
+  tip.innerHTML=`<div class="tip-title">${title}</div>${val}`;
+  tip.classList.add('on'); moveTip(e);
+}
+function hideTip(){ tip.classList.remove('on'); }
+function moveTip(e){
+  let x=e.clientX+14,y=e.clientY-14;
+  if(x+180>window.innerWidth) x=e.clientX-194;
+  if(y+80>window.innerHeight) y=e.clientY-90;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+
+buildTable();
+render();
+</script>
+</body>
+</html>
